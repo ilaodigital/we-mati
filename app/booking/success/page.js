@@ -1,8 +1,7 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { Suspense } from 'react'
 import Link from 'next/link'
 
 function SuccessContent() {
@@ -53,8 +52,6 @@ function SuccessContent() {
     )
   }
 
-  const payText = `Du er belastet <b>${booking.total} kr</b> — en kvittering er på vei.`
-
   return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 32 }}>
       <div className="confirm" style={{ maxWidth: 520 }}>
@@ -62,7 +59,7 @@ function SuccessContent() {
         <h3>Bestilling Bekreftet</h3>
         <p><b>{booking.service_name}</b></p>
         <p>{booking.date} · {booking.time}</p>
-        <p style={{ marginTop: 10 }} dangerouslySetInnerHTML={{ __html: payText }} />
+        <p style={{ marginTop: 10 }}>Du er belastet <b>{booking.total} kr</b> — en kvittering er på vei.</p>
         {booking.details && (
           <p style={{ marginTop: 10, fontSize: 14, color: 'var(--muted)' }}><b>Spesielle ønsker:</b> {booking.details}</p>
         )}
