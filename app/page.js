@@ -113,31 +113,25 @@ export default function Home() {
     }
 
     try {
-      if (pay === 'online') {
-        const res = await fetch('/api/payments/create', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(bookingData),
-        })
-        const data = await res.json()
-        if (data.url) {
-          window.location.href = data.url
-          return
-        }
-        throw new Error(data.error || 'Betalingsfeil')
-      }
-
-      const res = await fetch('/api/bookings', {
+      const endpoint = pay === 'online' ? '/api/payments/create' : '/api/bookings'
+      const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(bookingData),
       })
-      const booking = await res.json()
-      if (res.ok) {
-        setConfirmed(booking)
-      } else {
-        throw new Error(booking.error || 'Noe gikk galt')
+
+      const text = await res.text()
+      let data
+      try { data = JSON.parse(text) } catch { throw new Error('Serverfeil. Sjekk at alle miljøvariabler er satt i Vercel.') }
+
+      if (!res.ok) throw new Error(data.error || 'Noe gikk galt')
+
+      if (pay === 'online' && data.url) {
+        window.location.href = data.url
+        return
       }
+
+      setConfirmed(data)
     } catch (e) {
       alert(e.message || 'Noe gikk galt. Prøv igjen.')
       setSubmitting(false)
