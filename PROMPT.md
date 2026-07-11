@@ -16,7 +16,13 @@ Before you write any code, ask me these questions and wait for my answers:
 8. **Language** — which language the site should be in (default: Norwegian)
 9. **Hero media** — do I have a background video for the hero? If yes, I'll place it at `public/video/hero.mp4`. If no, use a high-quality photo instead (ask me for a file, or pick a fitting free Unsplash image matching the business)
 
-Once I've answered, build the following website:
+Once I've answered, work in two phases:
+
+## Phase 1 — HTML demo first (get my approval before Phase 2)
+Build a single static file `demo.html` (plain HTML/CSS/JS, no build step) that shows the full design of the website with my branding: hero (video or image), parallax feature sections, services price list, the complete 6-step booking form with the summary sidebar (non-functional — fake data, no backend), and the footer. Open it in the browser preview and show me screenshots (desktop and phone width). Iterate on it with me until I say the design is approved. Do NOT start the Next.js project before I approve the demo.
+
+## Phase 2 — Build the real website
+Convert the approved demo into the following production app, keeping the design exactly as approved:
 
 ## Tech stack
 - **Next.js 15 App Router**, JavaScript (not TypeScript), deployed on **Vercel**
