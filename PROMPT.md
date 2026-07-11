@@ -14,6 +14,7 @@ Before you write any code, ask me these questions and wait for my answers:
 6. **Services & prices** — list of services with names, short descriptions, and prices in kr
 7. **Opening hours / time slots** — which times are bookable each day (e.g. 09:00–18:45 every 45 min)
 8. **Language** — which language the site should be in (default: Norwegian)
+9. **Hero media** — do I have a background video for the hero? If yes, I'll place it at `public/video/hero.mp4`. If no, use a high-quality photo instead (ask me for a file, or pick a fitting free Unsplash image matching the business)
 
 Once I've answered, build the following website:
 
@@ -25,7 +26,8 @@ Once I've answered, build the following website:
 - Google Fonts: Archivo (headings, 700–900 weights, uppercase) + Inter (body)
 
 ## Main page (`app/page.js`, client component)
-- **Hero**: fullscreen background video (`public/video/hero.mp4`) with dark overlay, address as small eyebrow text, big brand name heading, tagline, two CTA buttons (book / services), "scroll to explore" hint
+- **Hero**: fullscreen background media with dark overlay, address as small eyebrow text, big brand name heading, tagline, two CTA buttons (book / services), "scroll to explore" hint
+  - Build the hero so it works with either video or image automatically: if `public/video/hero.mp4` exists, render a `<video autoPlay muted loop playsInline>` with a poster image; otherwise render the hero image (`public/img/hero.jpg` or the chosen Unsplash URL) as a fullscreen background. Also use the image as fallback while the video loads or on browsers that block autoplay
 - **Parallax scroll sections**: 3 feature sections (e.g. precision, tradition, experience) with text and image that animate in with translateY/opacity/clip-path on scroll (vanilla scroll listeners in useEffect)
 - **Services section**: 2-column price list (1 column on mobile), each service clickable → auto-selects it in the booking form and scrolls there. Keep text modest: name ~16px, price ~20px desktop; smaller on phone
 - **Booking form**, 6 steps in one page with a sticky summary sidebar:
