@@ -4,12 +4,14 @@ Copy everything below the line and paste it into a new Claude Code session (Sonn
 
 ---
 
+**IMPORTANT — the site must start out visually IDENTICAL to the We-mati reference design.** Do not redesign anything; do not invent your own colors, spacing, or fonts. Use the **exact stylesheet embedded in the Appendix at the bottom of this prompt** as `app/globals.css` (and the same CSS in the Phase 1 demo). The class names in the Appendix are the contract — build the HTML/JSX to use those exact class names so the CSS applies unchanged. The ONLY things that change per business are the **text content** (name, address, services, tagline) and — *only if I explicitly give different colors* — the `:root` variables at the top of the CSS. If I don't give colors, keep the default gold/black/brown palette exactly as-is. I'll make my own design changes myself afterward.
+
 Before you write any code, ask me these questions and wait for my answers:
 
 1. **Business name** — the brand name shown in the logo, hero, and emails
 2. **Address** — street address shown in the hero eyebrow and footer
 3. **Phone number** — shown in the footer and on error/contact messages
-4. **Color theme** — 2–3 colors (e.g. gold `#c9a84c`, black `#12100e`, dark brown `#2c1810`). Ask me for accent, background, and section colors
+4. **Color theme** — OPTIONAL. If I give colors, map them onto the `:root` variables (`--accent`, `--ink`, `--brown`, `--paper`, etc.). If I say "keep default" or skip it, use the reference palette unchanged.
 5. **Description / tagline** — a short sentence describing the business, used as the hero tagline and meta description
 6. **Services & prices** — list of services with names, short descriptions, and prices in kr
 7. **Opening hours / time slots** — which times are bookable each day (e.g. 09:00–18:45 every 45 min)
@@ -19,10 +21,10 @@ Before you write any code, ask me these questions and wait for my answers:
 Once I've answered, work in two phases:
 
 ## Phase 1 — HTML demo first (get my approval before Phase 2)
-Build a single static file `demo.html` (plain HTML/CSS/JS, no build step) that shows the full design of the website with my branding: hero (video or image), parallax feature sections, services price list, the complete 6-step booking form with the summary sidebar (non-functional — fake data, no backend), and the footer. Open it in the browser preview and show me screenshots (desktop and phone width). Iterate on it with me until I say the design is approved. Do NOT start the Next.js project before I approve the demo.
+Build a single static file `demo.html` (plain HTML/CSS/JS, no build step) that shows the full design with my branding: hero (video or image), parallax feature sections, services price list, the complete 6-step booking form with the summary sidebar (non-functional — fake data, no backend), and the footer. **Paste the entire Appendix CSS into a `<style>` tag in this demo unchanged.** Open it in the browser preview and show me screenshots (desktop and phone width). Iterate with me until I say the design is approved. Do NOT start the Next.js project before I approve the demo.
 
 ## Phase 2 — Build the real website
-Convert the approved demo into the following production app, keeping the design exactly as approved:
+Convert the approved demo into the following production app, keeping the design exactly as approved. Copy the Appendix CSS verbatim into `app/globals.css`.
 
 ## Tech stack
 - **Next.js 15 App Router**, JavaScript (not TypeScript), deployed on **Vercel**
@@ -32,33 +34,35 @@ Convert the approved demo into the following production app, keeping the design 
 - Google Fonts: Archivo (headings, 700–900 weights, uppercase) + Inter (body)
 
 ## Main page (`app/page.js`, client component)
-- **Hero**: fullscreen background media with dark overlay, address as small eyebrow text, big brand name heading, tagline, two CTA buttons (book / services), "scroll to explore" hint
-  - Build the hero so it works with either video or image automatically: if `public/video/hero.mp4` exists, render a `<video autoPlay muted loop playsInline>` with a poster image; otherwise render the hero image (`public/img/hero.jpg` or the chosen Unsplash URL) as a fullscreen background. Also use the image as fallback while the video loads or on browsers that block autoplay
-- **Parallax scroll sections**: 3 feature sections (e.g. precision, tradition, experience) with text and image that animate in with translateY/opacity/clip-path on scroll (vanilla scroll listeners in useEffect)
-- **Services section**: 2-column price list (1 column on mobile), each service clickable → auto-selects it in the booking form and scrolls there. Keep text modest: name ~16px, price ~20px desktop; smaller on phone
-- **Booking form**, 6 steps in one page with a sticky summary sidebar:
-  1. Choose service (grid of cards)
-  2. Choose date (next 14 days strip, skip closed days)
-  3. Choose time (slot grid, booked slots struck through/disabled — check against existing bookings)
-  4. Payment method: "Pay online (card/Vipps, −50 kr)" or "Pay in shop"
-  5. Special requests (free textarea)
-  6. Contact details (first/last name, email, phone) + submit button
-- Summary sidebar shows chosen service, date, time, payment, subtotal, discount, total
-- On submit: shop payments → POST `/api/bookings` → inline confirmation card; online payments → POST `/api/payments/create` → redirect to `/booking/checkout`
+- **Hero** (`.hero`, `.hero-video`, `.hero-overlay`, `.hero-meta`): fullscreen background media with dark gradient overlay, address as `.eyebrow` text, big brand `<h1>`, `.hero p` tagline, two `.btn` CTAs, rotated vertical `.hero-meta` text on the right
+  - Build the hero so it works with either video or image automatically: if `public/video/hero.mp4` exists, render a `<video autoPlay muted loop playsInline>` with a poster image; otherwise render the hero image (`public/img/hero.jpg` or the chosen Unsplash URL) as a fullscreen background. Use the image as fallback while the video loads or on browsers that block autoplay
+- **Sticky nav** (`header` / `.nav` / `.brand` / `.nav-links` / `.btn-nav`): starts transparent with white text over the hero, adds a `scrolled` class on scroll that flips it to a blurred paper background with dark text (see the `header:not(.scrolled)` / `header.scrolled` rules)
+- **Runner strip** (`.runner`): marquee band under the hero with ✦-separated selling points (e.g. "ERFARNE BARBERE ✦ TRADISJONELL BARBERING ✦ DROP-IN VELKOMMEN ✦ ÅPENT 7 DAGER")
+- **Parallax scroll sections** (`.px-section`, `.px-content`, `.px-image`, alternating `.reverse`): 3 feature sections (e.g. precision, tradition, experience) with text + image that animate in with translateY/opacity/clip-path on scroll (vanilla scroll listeners in useEffect)
+- **Services section** (`.services`, `.serv-grid`, `.serv` with `.name`/`.desc`/`.amt`): 2-column price list (1 column on mobile), each `.serv` clickable → auto-selects it in the booking form and scrolls there
+- **Booking form** (`.book`, `.book-wrap`, `.card`, `.step`), 6 steps in one page with a sticky `.summary` sidebar:
+  1. Choose service — `.opt-grid` of `.opt` cards (selected = `.sel`)
+  2. Choose date — `.cal-nav` + `.date-strip` of `.day` (next 14 days, skip closed days, disabled = `.dis`)
+  3. Choose time — `.times` grid of `.time` (booked slots get `.dis`, struck through; check against existing bookings)
+  4. Payment — `.pay-grid` of `.pay` ("Pay online card/Vipps −50 kr" with `.save` badge, or "Pay in shop")
+  5. Special requests — `.field` textarea
+  6. Contact details — `.row2` of `.field` inputs (first/last name, email, phone) + submit `.btn`
+- `.summary` sidebar shows chosen service, date, time, payment (`.sm-row`), then `.totals` with subtotal, discount, and `.grand` total
+- On submit: shop payments → POST `/api/bookings` → inline `.confirm` card; online payments → POST `/api/payments/create` → redirect to `/booking/checkout`
 - Parse API responses defensively (read text first, JSON.parse in try/catch) so misconfigured env vars give a readable error
 
 ## Demo payment flow (no real Stripe)
 - `/api/payments/create`: insert booking with `status: 'pending'`, return URL to `/booking/checkout?booking_id=...&total=...&service=...`
-- `/booking/checkout`: branded page with order summary and two buttons — **Pay with Vipps** (orange) and **Pay with Card** (accent color). Either one POSTs `/api/payments/confirm-demo` then redirects to `/booking/success?booking_id=...`
+- `/booking/checkout`: branded page with order summary and two buttons — **Pay with Vipps** (orange `#ff5b24`) and **Pay with Card** (accent color). Either one POSTs `/api/payments/confirm-demo` then redirects to `/booking/success?booking_id=...`
 - `/api/payments/confirm-demo`: set status to `confirmed`, send confirmation email once
-- `/booking/success`: polls `/api/bookings?id=...` until confirmed, then shows confirmation card with booking reference
+- `/booking/success`: polls `/api/bookings?id=...` until confirmed, then shows `.confirm` card with booking reference
 
 ## Admin page (`app/admin/page.js`)
-- Sidebar (brand + Calendar/Stats tabs + back-to-site link); becomes a top icon bar on phones
-- **Calendar tab**: month grid (Mon-first, localized day/month names), dots + booking count per day, prev/today/next controls. Clicking a day opens a **day schedule panel on the right side** (380px sticky column on desktop; stacks below calendar under 900px)
-- Day panel: bookings sorted by time showing time, name, service, details, price; **✓ Finished** and **✗ No-show** buttons on each booking (PATCH status), replaced by a colored badge once set; edit and delete icons
-- Add/edit booking modal: service dropdown, date, time, payment, name, email, phone, details; create, update, delete
-- **Stats tab** (for the shown month): total bookings, finished count (+ no-shows + upcoming), actual revenue (finished only) vs expected revenue (confirmed + finished), available slots, and a per-service breakdown table
+- `.admin-layout` with `.sidebar` (`.sb-brand` + `.sb-nav`/`.sb-link` Calendar/Stats tabs + `.sb-foot` back link); sidebar becomes a top icon bar on phones
+- **Calendar tab**: `.cal-grid` month grid (Mon-first, localized day/month names), `.dot`s + `.count` per `.cal-cell`, `.cal-arrows` prev/today/next. Clicking a day uses `.cal-tab-layout` to show a **`.day-panel` schedule on the right** (380px sticky column on desktop; `.cal-no-day` when nothing selected; stacks below under 900px)
+- `.day-panel`: `.bk-list` of `.bk-item` sorted by time — `.bk-time`, `.bk-info` (name/service/details), `.bk-total`; **✓ Finished** and **✗ No-show** `.status-btn`s (PATCH status), replaced by a `.status-badge` once set; `.bk-actions` edit and delete icons; rows tint via `.bk-status-finished` / `.bk-status-no_show`
+- Add/edit booking `.modal`: service dropdown, date, time, payment, name, email, phone, details; create, update, delete
+- **Stats tab**: `.stats-grid` of `.stat-card`s (total bookings, finished count + no-shows + upcoming, actual revenue [finished only] vs expected [confirmed + finished], available slots) and a `.breakdown` per-service table
 - Fully responsive down to 375px wide
 
 ## API routes
@@ -106,3 +110,388 @@ NEXT_PUBLIC_BASE_URL=http://localhost:3000
 - Run `next build` and fix anything until it passes
 - Initialize git, commit, and help me push to a new GitHub repo
 - Remind me to: run the schema in Supabase SQL Editor, add the env vars in Vercel, and set `NEXT_PUBLIC_BASE_URL` to the production domain
+
+---
+
+# Appendix — exact stylesheet (`app/globals.css`)
+
+Use this file verbatim. Change only the `:root` values, and only if I gave you different colors.
+
+```css
+:root {
+  --ink: #12100e;
+  --paper: #faf8f4;
+  --paper-2: #f0ece4;
+  --accent: #c9a84c;
+  --accent-dark: #a8882e;
+  --brown: #2c1810;
+  --brown-light: #3d261a;
+  --muted: #7a7068;
+  --line: #d8d0c4;
+  --ok: #2f7a3a;
+  --danger: #c0392b;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { font-family: 'Inter', sans-serif; background: var(--paper); color: var(--ink); line-height: 1.65; -webkit-font-smoothing: antialiased; }
+h1, h2, h3, h4 { font-family: 'Archivo', sans-serif; line-height: 1; letter-spacing: -.02em; }
+a { text-decoration: none; color: inherit; }
+img { display: block; }
+button { cursor: pointer; font-family: inherit; }
+.container { max-width: 1240px; margin: 0 auto; padding: 0 32px; }
+.eyebrow { display: inline-flex; align-items: center; gap: 10px; text-transform: uppercase; letter-spacing: 3px; font-size: 12px; font-weight: 500; color: var(--accent); }
+.eyebrow::before { content: ""; width: 30px; height: 1px; background: var(--accent); }
+
+.btn {
+  display: inline-flex; align-items: center; gap: 8px; font-family: 'Archivo'; font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 2px;
+  background: var(--accent); color: var(--ink); padding: 16px 34px; border-radius: 2px; transition: .25s; cursor: pointer; border: 1px solid var(--accent);
+}
+.btn:hover { background: var(--accent-dark); border-color: var(--accent-dark); color: #fff; }
+.btn-line { background: transparent; color: var(--ink); border-color: var(--line); }
+.btn-line:hover { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.btn-light { background: rgba(255,255,255,.15); color: #fff; border-color: rgba(255,255,255,.3); backdrop-filter: blur(4px); }
+.btn-light:hover { background: var(--accent); color: var(--ink); border-color: var(--accent); }
+.btn:disabled { opacity: .35; cursor: not-allowed; pointer-events: none; }
+.btn-primary { background: var(--accent); color: var(--ink); border-color: var(--accent); font-size: 12px; padding: 12px 22px; border-radius: 3px; }
+.btn-primary:hover { background: var(--accent-dark); border-color: var(--accent-dark); color: #fff; }
+.btn-secondary { background: var(--paper); color: var(--ink); border-color: var(--line); font-size: 12px; padding: 12px 22px; border-radius: 3px; }
+.btn-secondary:hover { border-color: var(--ink); }
+.btn-danger { background: var(--danger); color: #fff; border-color: var(--danger); font-size: 12px; padding: 12px 22px; border-radius: 3px; }
+.btn-danger:hover { background: #a93226; border-color: #a93226; }
+
+/* === NAV === */
+header { position: fixed; top: 0; left: 0; right: 0; z-index: 50; transition: .4s; padding: 22px 0; }
+header .brand, header .nav-links a, header .btn-nav { transition: color .4s, background .4s, border-color .4s; }
+header:not(.scrolled) .brand { color: #fff; }
+header:not(.scrolled) .nav-links a { color: rgba(255,255,255,.85); }
+header:not(.scrolled) .nav-links a:hover { color: var(--accent); }
+header:not(.scrolled) .btn-nav { background: transparent; border-color: rgba(255,255,255,.4); color: #fff; }
+header:not(.scrolled) .btn-nav:hover { background: var(--accent); border-color: var(--accent); color: var(--ink); }
+header:not(.scrolled) .burger { color: #fff; }
+header.scrolled { background: rgba(250,248,244,.97); backdrop-filter: blur(10px); padding: 14px 0; box-shadow: 0 1px 0 var(--line); }
+header.scrolled .brand { color: var(--ink); }
+header.scrolled .nav-links a { color: var(--ink); }
+header.scrolled .btn-nav { background: var(--accent); border-color: var(--accent); color: var(--ink); }
+.nav { display: flex; align-items: center; justify-content: space-between; }
+.brand { font-family: 'Archivo'; font-weight: 900; font-size: 24px; letter-spacing: -.03em; text-transform: uppercase; }
+.brand sup { color: var(--accent); font-size: 11px; vertical-align: super; }
+.nav-links { display: flex; gap: 36px; list-style: none; }
+.nav-links a { text-transform: uppercase; letter-spacing: 1.5px; font-size: 12px; font-weight: 500; font-family: 'Archivo'; transition: .2s; }
+.burger { display: none; font-size: 24px; background: none; border: none; cursor: pointer; color: var(--ink); }
+
+/* === HERO === */
+.hero { min-height: 100vh; display: flex; align-items: flex-end; position: relative; overflow: hidden; color: #fff; padding-bottom: 80px; }
+.hero-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; }
+.hero-overlay { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(20,17,15,.3) 0%, rgba(20,17,15,.65) 100%); z-index: 1; }
+.hero .container { position: relative; z-index: 2; }
+.hero .eyebrow { color: var(--accent); }
+.hero .eyebrow::before { background: var(--accent); }
+.hero h1 { font-size: clamp(60px, 12vw, 170px); font-weight: 900; text-transform: uppercase; margin: 20px 0 24px; }
+.hero p { max-width: 500px; font-size: 18px; font-weight: 300; margin-bottom: 34px; opacity: .92; }
+.hero-cta { display: flex; gap: 16px; flex-wrap: wrap; }
+.hero-meta { position: absolute; top: 50%; right: 32px; transform: translateY(-50%) rotate(90deg); transform-origin: right; text-transform: uppercase; letter-spacing: 4px; font-size: 11px; font-family: 'Archivo'; font-weight: 600; opacity: .8; z-index: 2; }
+
+.runner { background: var(--brown); color: var(--paper); padding: 26px 0; }
+.runner .container { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 24px; align-items: center; }
+.runner .it { font-family: 'Archivo'; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; font-size: 15px; display: flex; align-items: center; gap: 12px; }
+.runner .it b { color: var(--accent); }
+
+section { padding: 120px 0; }
+.lead { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; align-items: end; margin-bottom: 64px; }
+.lead h2 { font-size: clamp(40px, 6vw, 76px); font-weight: 800; text-transform: uppercase; }
+.lead p { color: var(--muted); font-weight: 300; font-size: 17px; }
+
+/* === PARALLAX === */
+.px-section { min-height: 100vh; display: flex; align-items: center; justify-content: center; gap: 80px; padding: 0 32px; overflow: hidden; }
+.px-section.reverse { flex-direction: row-reverse; }
+.px-content { max-width: 400px; }
+.px-content h2 { font-size: clamp(36px, 5vw, 60px); font-weight: 900; text-transform: uppercase; margin-bottom: 20px; color: var(--ink); }
+.px-content p { color: var(--muted); font-weight: 300; font-size: 16px; line-height: 1.7; }
+.px-image { width: 340px; height: 340px; overflow: hidden; border-radius: 3px; flex-shrink: 0; }
+.px-image img { width: 100%; height: 100%; object-fit: cover; }
+
+/* === SERVICES === */
+.services { background: var(--brown); color: var(--paper); }
+.services .lead h2 { color: var(--paper); }
+.services .lead p { color: #b0a494; }
+.services .eyebrow { color: var(--accent); }
+.serv-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0; }
+.serv { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; padding: 30px; border-bottom: 1px solid rgba(255,255,255,.1); transition: .2s; cursor: pointer; }
+.serv:hover { background: var(--brown-light); }
+.serv:nth-child(odd) { border-right: 1px solid rgba(255,255,255,.1); }
+.serv { padding: 22px 26px; }
+.serv .name { font-family: 'Archivo'; font-weight: 700; font-size: 16px; text-transform: uppercase; color: var(--paper); letter-spacing: .5px; }
+.serv .desc { color: #a09080; font-size: 13px; font-weight: 300; margin-top: 3px; }
+.serv .amt { font-family: 'Archivo'; font-weight: 900; font-size: 20px; color: var(--accent); white-space: nowrap; }
+
+/* === BOOKING === */
+.book { background: var(--paper-2); }
+.book .lead h2 { color: var(--ink); }
+.book-wrap { display: grid; grid-template-columns: 1.4fr .9fr; gap: 40px; align-items: flex-start; }
+.card { background: var(--paper); border: 1px solid var(--line); border-radius: 4px; padding: 34px; }
+.step { margin-bottom: 36px; }
+.step:last-child { margin-bottom: 0; }
+.step-h { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+.step-h .num { width: 32px; height: 32px; border-radius: 50%; background: var(--ink); color: var(--paper); display: grid; place-items: center; font-family: 'Archivo'; font-weight: 800; font-size: 14px; }
+.step-h h3 { font-family: 'Archivo'; font-weight: 800; text-transform: uppercase; font-size: 18px; letter-spacing: 1px; }
+
+.opt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.opt {
+  background: var(--paper); border: 1.5px solid var(--line); border-radius: 3px; padding: 16px 18px; cursor: pointer; transition: .15s;
+  display: flex; justify-content: space-between; align-items: center; gap: 12px; font-family: 'Archivo';
+}
+.opt:hover { border-color: var(--ink); }
+.opt.sel { border-color: var(--accent); background: #fff; box-shadow: inset 0 0 0 1px var(--accent); }
+.opt .n { font-weight: 700; text-transform: uppercase; font-size: 14px; letter-spacing: .5px; }
+.opt .d { font-family: 'Inter'; font-weight: 300; font-size: 12px; color: var(--muted); margin-top: 2px; }
+.opt .p { font-weight: 800; color: var(--accent); font-size: 16px; white-space: nowrap; }
+
+.cal-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+.cal-nav b { font-family: 'Archivo'; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; font-size: 14px; }
+.cal-nav button { background: none; border: 1px solid var(--line); width: 32px; height: 32px; cursor: pointer; font-size: 14px; border-radius: 3px; transition: .15s; }
+.cal-nav button:hover { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.date-strip { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
+.day {
+  background: var(--paper); border: 1.5px solid var(--line); border-radius: 3px; padding: 12px 6px; text-align: center; cursor: pointer; transition: .15s;
+  font-family: 'Archivo';
+}
+.day:hover:not(.dis) { border-color: var(--ink); }
+.day.sel { background: var(--accent); color: var(--ink); border-color: var(--accent); }
+.day .dow { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; opacity: .7; }
+.day .dn { font-weight: 800; font-size: 18px; margin-top: 4px; }
+.day.dis { opacity: .35; cursor: not-allowed; }
+
+.times { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.time {
+  background: var(--paper); border: 1.5px solid var(--line); border-radius: 3px; padding: 11px 6px; text-align: center; cursor: pointer; transition: .15s;
+  font-family: 'Archivo'; font-weight: 600; font-size: 14px;
+}
+.time:hover:not(.dis) { border-color: var(--ink); }
+.time.sel { background: var(--accent); color: var(--ink); border-color: var(--accent); }
+.time.dis { opacity: .3; cursor: not-allowed; text-decoration: line-through; }
+
+.pay-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.pay {
+  background: var(--paper); border: 1.5px solid var(--line); border-radius: 3px; padding: 20px; cursor: pointer; transition: .15s;
+  display: flex; flex-direction: column; gap: 8px; position: relative;
+}
+.pay:hover { border-color: var(--ink); }
+.pay.sel { border-color: var(--accent); background: #fff; box-shadow: inset 0 0 0 1px var(--accent); }
+.pay .t { font-family: 'Archivo'; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; font-size: 15px; }
+.pay .s { font-size: 13px; color: var(--muted); font-weight: 300; }
+.pay .save { position: absolute; top: 12px; right: 12px; background: var(--ok); color: #fff; font-family: 'Archivo'; font-weight: 800; font-size: 10px; letter-spacing: 1px; padding: 4px 8px; border-radius: 2px; text-transform: uppercase; }
+
+.field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+.field label { font-family: 'Archivo'; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; font-size: 11px; color: var(--muted); }
+.field input, .field textarea, .field select {
+  background: var(--paper); border: 1.5px solid var(--line); border-radius: 3px; padding: 12px 14px; font-family: 'Inter'; font-size: 15px;
+  transition: .15s; color: var(--ink); resize: vertical;
+}
+.field input:focus, .field textarea:focus, .field select:focus { outline: none; border-color: var(--accent); }
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+/* Summary sidebar */
+.summary { position: sticky; top: 110px; }
+.summary h3 { font-family: 'Archivo'; font-weight: 800; text-transform: uppercase; font-size: 22px; letter-spacing: .5px; margin-bottom: 22px; padding-bottom: 18px; border-bottom: 1px solid var(--line); }
+.sm-row { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; font-size: 15px; }
+.sm-row .k { color: var(--muted); font-size: 13px; text-transform: uppercase; letter-spacing: 1px; font-family: 'Archivo'; font-weight: 600; }
+.sm-row .v { font-family: 'Archivo'; font-weight: 700; text-align: right; }
+.sm-row .v.empty { color: #bbb; font-weight: 400; }
+.totals { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--line); }
+.totals .disc .v { color: var(--ok); }
+.grand { display: flex; justify-content: space-between; align-items: baseline; padding-top: 14px; margin-top: 8px; border-top: 2px solid var(--ink); }
+.grand .k { font-family: 'Archivo'; font-weight: 800; text-transform: uppercase; font-size: 14px; letter-spacing: 1px; }
+.grand .v { font-family: 'Archivo'; font-weight: 900; font-size: 34px; color: var(--accent); }
+
+.confirm { background: #fff; border: 1px solid var(--line); padding: 34px; border-radius: 4px; text-align: center; grid-column: 1/-1; }
+.confirm .ok-icon { width: 60px; height: 60px; border-radius: 50%; background: var(--ok); color: #fff; display: grid; place-items: center; margin: 0 auto 18px; font-size: 28px; }
+.confirm h3 { font-family: 'Archivo'; font-weight: 800; text-transform: uppercase; font-size: 26px; margin-bottom: 10px; }
+.confirm p { color: var(--muted); margin-bottom: 8px; }
+.confirm .ref { font-family: 'Archivo'; font-weight: 800; color: var(--accent); font-size: 20px; letter-spacing: 2px; margin-top: 14px; }
+
+/* === FOOTER === */
+footer { background: var(--ink); color: var(--paper); padding: 80px 0 32px; }
+.foot-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 40px; }
+.foot-brand { font-family: 'Archivo'; font-weight: 900; font-size: 30px; text-transform: uppercase; margin-bottom: 16px; }
+.foot-brand sup { color: var(--accent); font-size: 13px; }
+footer p, footer li { color: #a89f93; font-weight: 300; list-style: none; margin-bottom: 8px; font-size: 15px; }
+footer h4 { font-family: 'Archivo'; text-transform: uppercase; letter-spacing: 1px; font-size: 14px; margin-bottom: 16px; color: var(--accent); }
+.copy { text-align: center; margin-top: 56px; padding-top: 26px; border-top: 1px solid rgba(255,255,255,.1); color: #7a7268; font-size: 13px; letter-spacing: 1px; text-transform: uppercase; }
+
+/* === ADMIN === */
+.admin-layout { display: flex; min-height: 100vh; }
+.sidebar { width: 240px; background: var(--brown); color: var(--paper); display: flex; flex-direction: column; flex-shrink: 0; position: fixed; top: 0; left: 0; bottom: 0; z-index: 10; }
+.sb-brand { padding: 28px 24px; font-family: 'Archivo'; font-weight: 900; font-size: 22px; text-transform: uppercase; letter-spacing: -.02em; border-bottom: 1px solid rgba(255,255,255,.08); }
+.sb-brand sup { color: var(--accent); font-size: 10px; vertical-align: super; }
+.sb-brand small { display: block; font-size: 11px; font-weight: 500; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); margin-top: 4px; }
+.sb-nav { padding: 20px 0; flex: 1; }
+.sb-link {
+  display: flex; align-items: center; gap: 12px; padding: 12px 24px; font-family: 'Archivo'; font-weight: 600; font-size: 14px;
+  text-transform: uppercase; letter-spacing: 1px; color: #b0a494; transition: .15s; cursor: pointer; border: none; background: none; width: 100%; text-align: left;
+}
+.sb-link:hover { color: var(--paper); background: rgba(255,255,255,.05); }
+.sb-link.active { color: var(--accent); background: rgba(201,168,76,.08); }
+.sb-foot { padding: 20px 24px; border-top: 1px solid rgba(255,255,255,.08); }
+.sb-foot a { color: var(--accent); font-family: 'Archivo'; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }
+
+.admin-main { margin-left: 240px; flex: 1; min-height: 100vh; display: flex; flex-direction: column; }
+.topbar { background: var(--paper); border-bottom: 1px solid var(--line); padding: 18px 32px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 5; }
+.topbar h1 { font-size: 22px; font-weight: 800; text-transform: uppercase; letter-spacing: .5px; }
+.admin-content { padding: 32px; flex: 1; }
+
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* Admin calendar */
+.cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+.cal-header h2 { font-size: 28px; font-weight: 800; text-transform: uppercase; }
+.cal-arrows { display: flex; gap: 8px; }
+.cal-arrows button { width: 36px; height: 36px; border: 1px solid var(--line); background: var(--paper); border-radius: 3px; font-size: 16px; display: grid; place-items: center; transition: .15s; cursor: pointer; }
+.cal-arrows button:hover { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); background: var(--paper); border: 1px solid var(--line); border-radius: 4px; overflow: hidden; }
+.cal-dow { padding: 12px; text-align: center; font-family: 'Archivo'; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: var(--muted); border-bottom: 1px solid var(--line); }
+.cal-cell { min-height: 100px; padding: 10px; border-bottom: 1px solid var(--line); border-right: 1px solid var(--line); cursor: pointer; transition: .1s; position: relative; }
+.cal-cell:nth-child(7n) { border-right: none; }
+.cal-cell:hover { background: var(--paper-2); }
+.cal-cell.today { background: rgba(201,168,76,.08); }
+.cal-cell.other { opacity: .3; cursor: default; }
+.cal-cell.selected { box-shadow: inset 0 0 0 2px var(--accent); }
+.cal-cell .d { font-family: 'Archivo'; font-weight: 700; font-size: 14px; margin-bottom: 6px; }
+.cal-cell .dots { display: flex; flex-wrap: wrap; gap: 3px; }
+.cal-cell .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+.cal-cell .count { font-family: 'Archivo'; font-weight: 700; font-size: 11px; color: var(--accent); margin-top: 4px; }
+
+.cal-tab-layout { display: grid; grid-template-columns: 1fr 380px; gap: 24px; align-items: start; }
+.cal-tab-layout.cal-no-day { grid-template-columns: 1fr; }
+.cal-left { min-width: 0; }
+.day-panel { background: var(--paper); border: 1px solid var(--line); border-radius: 4px; overflow: hidden; position: sticky; top: 80px; }
+.day-panel-header { padding: 20px 24px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; }
+.day-panel-header h3 { font-family: 'Archivo'; font-weight: 800; text-transform: uppercase; font-size: 18px; letter-spacing: .5px; }
+.day-panel-empty { padding: 40px; text-align: center; color: var(--muted); }
+.bk-list { list-style: none; }
+.bk-item { display: grid; grid-template-columns: 56px 1fr auto auto auto; gap: 10px; align-items: center; padding: 14px 16px; border-bottom: 1px solid var(--line); transition: .1s; }
+.bk-item:last-child { border-bottom: none; }
+.bk-item:hover { background: var(--paper-2); }
+.bk-item.bk-status-finished { background: rgba(80,160,80,.06); }
+.bk-item.bk-status-no_show { background: rgba(200,60,60,.06); opacity: .7; }
+.bk-status-btns { display: flex; gap: 6px; }
+.status-btn { font-family: 'Archivo'; font-size: 13px; font-weight: 700; width: 28px; height: 28px; border-radius: 3px; border: 1px solid; cursor: pointer; transition: .15s; display: grid; place-items: center; }
+.status-btn.done { border-color: #3a9a3a; color: #3a9a3a; background: transparent; }
+.status-btn.done:hover { background: #3a9a3a; color: #fff; }
+.status-btn.noshow { border-color: #c03030; color: #c03030; background: transparent; }
+.status-btn.noshow:hover { background: #c03030; color: #fff; }
+.status-badge { font-family: 'Archivo'; font-size: 11px; font-weight: 700; letter-spacing: .5px; padding: 5px 10px; border-radius: 3px; }
+.status-badge.finished { background: rgba(80,160,80,.15); color: #3a9a3a; }
+.status-badge.no-show { background: rgba(200,60,60,.12); color: #c03030; }
+.bk-time { font-family: 'Archivo'; font-weight: 800; font-size: 16px; color: var(--accent); }
+.bk-info .bk-name { font-family: 'Archivo'; font-weight: 700; font-size: 13px; text-transform: uppercase; }
+.bk-info .bk-svc { font-size: 12px; color: var(--muted); }
+.bk-details { font-size: 11px; color: var(--muted); font-style: italic; margin-top: 2px; }
+.bk-pay { font-family: 'Archivo'; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }
+.bk-pay.online { color: var(--ok); }
+.bk-pay.shop { color: var(--muted); }
+.bk-total { font-family: 'Archivo'; font-weight: 800; font-size: 16px; text-align: right; }
+.bk-actions { display: flex; gap: 6px; justify-content: flex-end; }
+.bk-actions button { width: 30px; height: 30px; border: 1px solid var(--line); background: var(--paper); border-radius: 3px; display: grid; place-items: center; transition: .15s; cursor: pointer; }
+.bk-actions button:hover { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+
+/* Stats */
+.stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-bottom: 32px; }
+.stat-card { background: var(--paper); border: 1px solid var(--line); border-radius: 4px; padding: 28px; position: relative; overflow: hidden; }
+.stat-card::after { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; }
+.stat-card.gold::after { background: var(--accent); }
+.stat-card.green::after { background: var(--ok); }
+.stat-card.brown-accent::after { background: var(--brown); }
+.stat-card .label { font-family: 'Archivo'; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 2px; color: var(--muted); margin-bottom: 8px; }
+.stat-card .value { font-family: 'Archivo'; font-weight: 900; font-size: 42px; line-height: 1; letter-spacing: -.02em; }
+.stat-card .sub { font-size: 14px; color: var(--muted); margin-top: 8px; font-weight: 300; }
+
+.breakdown { background: var(--paper); border: 1px solid var(--line); border-radius: 4px; overflow: hidden; }
+.breakdown h3 { padding: 20px 24px; border-bottom: 1px solid var(--line); font-family: 'Archivo'; font-weight: 800; text-transform: uppercase; font-size: 16px; letter-spacing: 1px; }
+.breakdown table { width: 100%; border-collapse: collapse; }
+.breakdown th, .breakdown td { padding: 12px 24px; text-align: left; border-bottom: 1px solid var(--line); }
+.breakdown th { font-family: 'Archivo'; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: var(--muted); }
+.breakdown td { font-size: 14px; }
+.breakdown td:last-child { font-family: 'Archivo'; font-weight: 700; text-align: right; }
+.breakdown .total-row td { font-family: 'Archivo'; font-weight: 800; font-size: 16px; background: var(--paper-2); border-top: 2px solid var(--ink); }
+
+/* Modal */
+.modal-overlay { position: fixed; inset: 0; background: rgba(18,16,14,.6); z-index: 100; display: none; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+.modal-overlay.open { display: flex; }
+.modal { background: var(--paper); border-radius: 6px; width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,.3); }
+.modal-header { padding: 24px 28px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; }
+.modal-header h3 { font-family: 'Archivo'; font-weight: 800; text-transform: uppercase; font-size: 18px; letter-spacing: 1px; }
+.modal-close { width: 32px; height: 32px; border: 1px solid var(--line); background: var(--paper); border-radius: 3px; display: grid; place-items: center; font-size: 18px; transition: .15s; cursor: pointer; }
+.modal-close:hover { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.modal-body { padding: 28px; }
+.modal-footer { padding: 20px 28px; border-top: 1px solid var(--line); display: flex; justify-content: flex-end; gap: 12px; }
+
+@media (max-width: 900px) {
+  .nav-links { display: none; }
+  .burger { display: block; }
+  .hero-meta { display: none; }
+  .lead { grid-template-columns: 1fr; gap: 24px; }
+  .serv-grid { grid-template-columns: 1fr; }
+  .serv:nth-child(odd) { border-right: none; }
+  .serv { padding: 18px 20px; gap: 12px; }
+  .serv .name { font-size: 14px; }
+  .serv .desc { font-size: 12px; }
+  .serv .amt { font-size: 17px; }
+  .book-wrap { grid-template-columns: 1fr; }
+  .summary { position: static; }
+  .opt-grid, .pay-grid, .row2 { grid-template-columns: 1fr; }
+  .times { grid-template-columns: repeat(3, 1fr); }
+  .date-strip { grid-template-columns: repeat(4, 1fr); }
+  section { padding: 80px 0; }
+  .px-section { flex-direction: column !important; gap: 40px; min-height: auto; padding: 80px 32px; }
+  .px-image { width: 100%; max-width: 340px; height: 280px; }
+  .foot-grid { grid-template-columns: 1fr 1fr; gap: 30px; }
+  .sidebar { width: 60px; overflow: hidden; }
+  .sb-brand span, .sb-link span, .sb-foot { display: none; }
+  .admin-main { margin-left: 60px; }
+  .stats-grid { grid-template-columns: 1fr; }
+  .admin-content { padding: 16px; }
+  /* Day schedule stacks below calendar on narrow screens */
+  .cal-tab-layout, .cal-tab-layout.cal-no-day { grid-template-columns: 1fr; }
+  .day-panel { position: static; top: auto; }
+}
+
+/* Phone layout */
+@media (max-width: 640px) {
+  .sidebar { width: 100%; height: auto; position: sticky; flex-direction: row; align-items: center; bottom: auto; }
+  .sb-brand { padding: 14px 16px; font-size: 18px; border-bottom: none; }
+  .sb-brand small { display: none; }
+  .sb-nav { display: flex; padding: 0; flex: 1; }
+  .sb-link { padding: 14px 12px; justify-content: center; }
+  .sb-link span { display: none; }
+  .sb-foot { display: none; }
+  .admin-layout { flex-direction: column; }
+  .admin-main { margin-left: 0; }
+  .topbar { padding: 14px 16px; }
+  .topbar h1 { font-size: 18px; }
+  .topbar .btn span { display: none; }
+
+  .cal-header h2 { font-size: 20px; }
+  .cal-arrows button { white-space: nowrap; width: auto; min-width: 36px; padding: 0 10px; }
+  .cal-cell { min-height: 56px; padding: 6px; }
+  .cal-cell .d { font-size: 12px; margin-bottom: 2px; }
+  .cal-cell .count { display: none; }
+  .cal-cell .dot { width: 5px; height: 5px; }
+  .cal-dow { padding: 8px 2px; font-size: 9px; letter-spacing: 1px; }
+
+  /* Booking cards stack vertically on phone */
+  .bk-item { grid-template-columns: auto 1fr auto; grid-template-areas: "time total actions" "info info info" "status status status"; gap: 8px 10px; padding: 14px 16px; }
+  .bk-time { grid-area: time; }
+  .bk-info { grid-area: info; }
+  .bk-total { grid-area: total; text-align: left; align-self: center; }
+  .bk-status-btns { grid-area: status; }
+  .bk-actions { grid-area: actions; }
+  .bk-info .bk-name { font-size: 14px; }
+  .bk-info .bk-svc { font-size: 13px; }
+
+  .modal { width: 94vw; max-height: 90vh; }
+  .stat-card { padding: 20px; }
+  .breakdown { overflow-x: auto; }
+}
+```
