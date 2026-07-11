@@ -100,9 +100,10 @@ section { padding: 120px 0; }
 .serv { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; padding: 30px; border-bottom: 1px solid rgba(255,255,255,.1); transition: .2s; cursor: pointer; }
 .serv:hover { background: var(--brown-light); }
 .serv:nth-child(odd) { border-right: 1px solid rgba(255,255,255,.1); }
-.serv .name { font-family: 'Archivo'; font-weight: 700; font-size: 22px; text-transform: uppercase; color: var(--paper); }
-.serv .desc { color: #a09080; font-size: 14px; font-weight: 300; margin-top: 4px; }
-.serv .amt { font-family: 'Archivo'; font-weight: 900; font-size: 30px; color: var(--accent); white-space: nowrap; }
+.serv { padding: 22px 26px; }
+.serv .name { font-family: 'Archivo'; font-weight: 700; font-size: 16px; text-transform: uppercase; color: var(--paper); letter-spacing: .5px; }
+.serv .desc { color: #a09080; font-size: 13px; font-weight: 300; margin-top: 3px; }
+.serv .amt { font-family: 'Archivo'; font-weight: 900; font-size: 20px; color: var(--accent); white-space: nowrap; }
 
 /* === BOOKING === */
 .book { background: var(--paper-2); }
@@ -313,6 +314,10 @@ footer h4 { font-family: 'Archivo'; text-transform: uppercase; letter-spacing: 1
   .lead { grid-template-columns: 1fr; gap: 24px; }
   .serv-grid { grid-template-columns: 1fr; }
   .serv:nth-child(odd) { border-right: none; }
+  .serv { padding: 18px 20px; gap: 12px; }
+  .serv .name { font-size: 14px; }
+  .serv .desc { font-size: 12px; }
+  .serv .amt { font-size: 17px; }
   .book-wrap { grid-template-columns: 1fr; }
   .summary { position: static; }
   .opt-grid, .pay-grid, .row2 { grid-template-columns: 1fr; }
