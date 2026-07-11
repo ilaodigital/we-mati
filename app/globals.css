@@ -326,6 +326,46 @@ footer h4 { font-family: 'Archivo'; text-transform: uppercase; letter-spacing: 1
   .sb-brand span, .sb-link span, .sb-foot { display: none; }
   .admin-main { margin-left: 60px; }
   .stats-grid { grid-template-columns: 1fr; }
-  .bk-item { grid-template-columns: 60px 1fr 80px; }
   .admin-content { padding: 16px; }
+  /* Day schedule stacks below calendar on narrow screens */
+  .cal-tab-layout, .cal-tab-layout.cal-no-day { grid-template-columns: 1fr; }
+  .day-panel { position: static; top: auto; }
+}
+
+/* Phone layout */
+@media (max-width: 640px) {
+  .sidebar { width: 100%; height: auto; position: sticky; flex-direction: row; align-items: center; bottom: auto; }
+  .sb-brand { padding: 14px 16px; font-size: 18px; border-bottom: none; }
+  .sb-brand small { display: none; }
+  .sb-nav { display: flex; padding: 0; flex: 1; }
+  .sb-link { padding: 14px 12px; justify-content: center; }
+  .sb-link span { display: none; }
+  .sb-foot { display: none; }
+  .admin-layout { flex-direction: column; }
+  .admin-main { margin-left: 0; }
+  .topbar { padding: 14px 16px; }
+  .topbar h1 { font-size: 18px; }
+  .topbar .btn span { display: none; }
+
+  .cal-header h2 { font-size: 20px; }
+  .cal-arrows button { white-space: nowrap; width: auto; min-width: 36px; padding: 0 10px; }
+  .cal-cell { min-height: 56px; padding: 6px; }
+  .cal-cell .d { font-size: 12px; margin-bottom: 2px; }
+  .cal-cell .count { display: none; }
+  .cal-cell .dot { width: 5px; height: 5px; }
+  .cal-dow { padding: 8px 2px; font-size: 9px; letter-spacing: 1px; }
+
+  /* Booking cards stack vertically on phone */
+  .bk-item { grid-template-columns: auto 1fr auto; grid-template-areas: "time total actions" "info info info" "status status status"; gap: 8px 10px; padding: 14px 16px; }
+  .bk-time { grid-area: time; }
+  .bk-info { grid-area: info; }
+  .bk-total { grid-area: total; text-align: left; align-self: center; }
+  .bk-status-btns { grid-area: status; }
+  .bk-actions { grid-area: actions; }
+  .bk-info .bk-name { font-size: 14px; }
+  .bk-info .bk-svc { font-size: 13px; }
+
+  .modal { width: 94vw; max-height: 90vh; }
+  .stat-card { padding: 20px; }
+  .breakdown { overflow-x: auto; }
 }
