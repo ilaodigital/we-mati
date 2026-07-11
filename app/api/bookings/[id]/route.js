@@ -30,6 +30,17 @@ export async function PUT(request, { params }) {
   return NextResponse.json({ ok: true })
 }
 
+export async function PATCH(request, { params }) {
+  const db = supabaseAdmin()
+  const { id } = await params
+  const { status } = await request.json()
+  const allowed = ['confirmed', 'finished', 'no_show', 'cancelled']
+  if (!allowed.includes(status)) return NextResponse.json({ error: 'Invalid status' }, { status: 400 })
+  const { error } = await db.from('bookings').update({ status }).eq('id', id)
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  return NextResponse.json({ ok: true })
+}
+
 export async function DELETE(request, { params }) {
   const db = supabaseAdmin()
   const { id } = await params

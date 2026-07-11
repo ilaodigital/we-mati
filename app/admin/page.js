@@ -115,11 +115,23 @@ export default function AdminPage() {
     fetchBookings()
   }
 
+  async function handleStatus(id, status) {
+    await fetch(`/api/bookings/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status }),
+    })
+    fetchBookings()
+  }
+
   // Stats
   const totalBooked = bookings.length
   const totalSlots = daysInMonth * TIMES.length
   const available = totalSlots - totalBooked
-  const revenue = bookings.reduce((s, b) => s + b.total, 0)
+  const finished = bookings.filter(b => b.status === 'finished').length
+  const noShows = bookings.filter(b => b.status === 'no_show').length
+  const revenue = bookings.filter(b => b.status === 'finished').reduce((s, b) => s + b.total, 0)
+  const expectedRevenue = bookings.filter(b => ['confirmed', 'finished'].includes(b.status)).reduce((s, b) => s + b.total, 0)
 
   const svcCounts = {}, svcRevenue = {}
   bookings.forEach(b => {
@@ -197,7 +209,7 @@ export default function AdminPage() {
                 ) : (
                   <ul className="bk-list">
                     {dayBookings.map(b => (
-                      <li key={b.id} className="bk-item">
+                      <li key={b.id} className={'bk-item bk-status-' + b.status}>
                         <div className="bk-time">{b.time}</div>
                         <div className="bk-info">
                           <div className="bk-name">{b.first_name} {b.last_name}</div>
@@ -205,6 +217,18 @@ export default function AdminPage() {
                         </div>
                         <div className={'bk-pay ' + (b.pay || 'shop')}>{b.pay === 'online' ? 'Nettbetaling' : 'I butikk'}</div>
                         <div className="bk-total">{b.total} kr</div>
+                        <div className="bk-status-btns">
+                          {b.status === 'finished' ? (
+                            <span className="status-badge finished">✓ Fullført</span>
+                          ) : b.status === 'no_show' ? (
+                            <span className="status-badge no-show">✗ No-show</span>
+                          ) : (
+                            <>
+                              <button className="status-btn done" title="Fullført" onClick={() => handleStatus(b.id, 'finished')}>✓ Fullført</button>
+                              <button className="status-btn noshow" title="Møtte ikke opp" onClick={() => handleStatus(b.id, 'no_show')}>✗ No-show</button>
+                            </>
+                          )}
+                        </div>
                         <div className="bk-actions">
                           <button title="Rediger" onClick={() => openEdit(b)}>
                             <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
@@ -230,14 +254,19 @@ export default function AdminPage() {
                 <div className="sub">{MONTHS[calMonth]} {calYear}</div>
               </div>
               <div className="stat-card green">
+                <div className="label">Fullførte klipp</div>
+                <div className="value">{finished}</div>
+                <div className="sub">{noShows} no-show{noShows !== 1 ? 's' : ''} · {totalBooked - finished - noShows} kommende</div>
+              </div>
+              <div className="stat-card brown-accent">
+                <div className="label">Faktisk omsetning</div>
+                <div className="value">{revenue.toLocaleString('no-NO')} kr</div>
+                <div className="sub">Forventet totalt: {expectedRevenue.toLocaleString('no-NO')} kr</div>
+              </div>
+              <div className="stat-card">
                 <div className="label">Ledige tider</div>
                 <div className="value">{available}</div>
                 <div className="sub">av {totalSlots} totalt ({daysInMonth} dager × {TIMES.length} tider)</div>
-              </div>
-              <div className="stat-card brown-accent">
-                <div className="label">Forventet omsetning</div>
-                <div className="value">{revenue.toLocaleString('no-NO')} kr</div>
-                <div className="sub">Online rabatt inkludert</div>
               </div>
             </div>
             <div className="breakdown">
