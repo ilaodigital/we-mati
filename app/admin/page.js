@@ -169,80 +169,88 @@ export default function AdminPage() {
         <div className="admin-content">
           {/* CALENDAR TAB */}
           <div className={'tab-panel' + (tab === 'calendar' ? ' active' : '')}>
-            <div className="cal-header">
-              <h2>{MONTHS[calMonth]} {calYear}</h2>
-              <div className="cal-arrows">
-                <button onClick={() => shiftMonth(-1)}>‹</button>
-                <button onClick={goToday}>I dag</button>
-                <button onClick={() => shiftMonth(1)}>›</button>
+            <div className={'cal-tab-layout' + (selectedDate ? '' : ' cal-no-day')}>
+              <div className="cal-left">
+                <div className="cal-header">
+                  <h2>{MONTHS[calMonth]} {calYear}</h2>
+                  <div className="cal-arrows">
+                    <button onClick={() => shiftMonth(-1)}>‹</button>
+                    <button onClick={goToday}>I dag</button>
+                    <button onClick={() => shiftMonth(1)}>›</button>
+                  </div>
+                </div>
+                <div className="cal-grid">
+                  {['Man','Tir','Ons','Tor','Fre','Lør','Søn'].map(d => <div key={d} className="cal-dow">{d}</div>)}
+                  {calCells.map((cell, i) => (
+                    <div key={i}
+                      className={'cal-cell' + (cell.other ? ' other' : '') + (cell.today ? ' today' : '') + (cell.dateStr === selectedDate ? ' selected' : '')}
+                      onClick={() => !cell.other && setSelectedDate(cell.dateStr)}
+                    >
+                      <div className="d">{cell.day}</div>
+                      {!cell.other && cell.count > 0 && (
+                        <>
+                          <div className="dots">{Array.from({ length: Math.min(cell.count, 6) }).map((_, j) => <div key={j} className="dot" />)}</div>
+                          <div className="count">{cell.count} bestilling{cell.count > 1 ? 'er' : ''}</div>
+                        </>
+                      )}
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
-            <div className="cal-grid">
-              {['Man','Tir','Ons','Tor','Fre','Lør','Søn'].map(d => <div key={d} className="cal-dow">{d}</div>)}
-              {calCells.map((cell, i) => (
-                <div key={i}
-                  className={'cal-cell' + (cell.other ? ' other' : '') + (cell.today ? ' today' : '') + (cell.dateStr === selectedDate ? ' selected' : '')}
-                  onClick={() => !cell.other && setSelectedDate(cell.dateStr)}
-                >
-                  <div className="d">{cell.day}</div>
-                  {!cell.other && cell.count > 0 && (
-                    <>
-                      <div className="dots">{Array.from({ length: Math.min(cell.count, 6) }).map((_, j) => <div key={j} className="dot" />)}</div>
-                      <div className="count">{cell.count} bestilling{cell.count > 1 ? 'er' : ''}</div>
-                    </>
-                  )}
-                </div>
-              ))}
-            </div>
 
-            {selectedDate && (
               <div className="day-panel">
-                <div className="day-panel-header">
-                  <h3>{dayTitle}</h3>
-                  <button className="btn btn-primary" onClick={() => openAdd(selectedDate)}>
-                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                    Legg Til
-                  </button>
-                </div>
-                {dayBookings.length === 0 ? (
-                  <div className="day-panel-empty">Ingen bestillinger denne dagen.</div>
+                {!selectedDate ? (
+                  <div className="day-panel-empty">Velg en dag for å se bestillinger.</div>
                 ) : (
-                  <ul className="bk-list">
-                    {dayBookings.map(b => (
-                      <li key={b.id} className={'bk-item bk-status-' + b.status}>
-                        <div className="bk-time">{b.time}</div>
-                        <div className="bk-info">
-                          <div className="bk-name">{b.first_name} {b.last_name}</div>
-                          <div className="bk-svc">{b.service_name}{b.details ? ' · ' + b.details : ''}</div>
-                        </div>
-                        <div className={'bk-pay ' + (b.pay || 'shop')}>{b.pay === 'online' ? 'Nettbetaling' : 'I butikk'}</div>
-                        <div className="bk-total">{b.total} kr</div>
-                        <div className="bk-status-btns">
-                          {b.status === 'finished' ? (
-                            <span className="status-badge finished">✓ Fullført</span>
-                          ) : b.status === 'no_show' ? (
-                            <span className="status-badge no-show">✗ No-show</span>
-                          ) : (
-                            <>
-                              <button className="status-btn done" title="Fullført" onClick={() => handleStatus(b.id, 'finished')}>✓ Fullført</button>
-                              <button className="status-btn noshow" title="Møtte ikke opp" onClick={() => handleStatus(b.id, 'no_show')}>✗ No-show</button>
-                            </>
-                          )}
-                        </div>
-                        <div className="bk-actions">
-                          <button title="Rediger" onClick={() => openEdit(b)}>
-                            <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                          </button>
-                          <button title="Slett" onClick={() => handleDelete(b.id)}>
-                            <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                          </button>
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
+                  <>
+                    <div className="day-panel-header">
+                      <h3>{dayTitle}</h3>
+                      <button className="btn btn-primary" onClick={() => openAdd(selectedDate)}>
+                        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        Legg Til
+                      </button>
+                    </div>
+                    {dayBookings.length === 0 ? (
+                      <div className="day-panel-empty">Ingen bestillinger denne dagen.</div>
+                    ) : (
+                      <ul className="bk-list">
+                        {dayBookings.map(b => (
+                          <li key={b.id} className={'bk-item bk-status-' + b.status}>
+                            <div className="bk-time">{b.time}</div>
+                            <div className="bk-info">
+                              <div className="bk-name">{b.first_name} {b.last_name}</div>
+                              <div className="bk-svc">{b.service_name}</div>
+                              {b.details && <div className="bk-details">{b.details}</div>}
+                            </div>
+                            <div className="bk-total">{b.total} kr</div>
+                            <div className="bk-status-btns">
+                              {b.status === 'finished' ? (
+                                <span className="status-badge finished">✓ Fullført</span>
+                              ) : b.status === 'no_show' ? (
+                                <span className="status-badge no-show">✗ No-show</span>
+                              ) : (
+                                <>
+                                  <button className="status-btn done" onClick={() => handleStatus(b.id, 'finished')}>✓</button>
+                                  <button className="status-btn noshow" onClick={() => handleStatus(b.id, 'no_show')}>✗</button>
+                                </>
+                              )}
+                            </div>
+                            <div className="bk-actions">
+                              <button title="Rediger" onClick={() => openEdit(b)}>
+                                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                              </button>
+                              <button title="Slett" onClick={() => handleDelete(b.id)}>
+                                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                              </button>
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </>
                 )}
               </div>
-            )}
+            </div>
           </div>
 
           {/* STATS TAB */}
