@@ -83,7 +83,7 @@ section { padding: 120px 0; }
 .lead p { color: var(--muted); font-weight: 300; font-size: 17px; }
 
 /* === PARALLAX === */
-.px-section { min-height: 100vh; display: flex; align-items: center; justify-content: center; gap: 80px; padding: 0 32px; overflow: hidden; }
+.px-section { display: flex; align-items: center; justify-content: center; gap: 80px; padding: 70px 32px; overflow: hidden; }
 .px-section.reverse { flex-direction: row-reverse; }
 .px-content { max-width: 400px; }
 .px-content h2 { font-size: clamp(36px, 5vw, 60px); font-weight: 900; text-transform: uppercase; margin-bottom: 20px; color: var(--ink); }
