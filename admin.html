@@ -1,0 +1,480 @@
+<!doctype html>
+<html lang="no">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>We-mati — Admin (Demo)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#12100e; --paper:#faf8f4; --paper-2:#f0ece4; --accent:#c9a84c; --accent-dark:#a8882e;
+  --brown:#2c1810; --brown-light:#3d261a; --muted:#7a7068; --line:#d8d0c4; --ok:#2f7a3a; --danger:#c0392b;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Inter',sans-serif;background:var(--paper);color:var(--ink);line-height:1.65;-webkit-font-smoothing:antialiased;}
+h1,h2,h3,h4{font-family:'Archivo',sans-serif;line-height:1;letter-spacing:-.02em;}
+a{text-decoration:none;color:inherit;}
+button{cursor:pointer;font-family:inherit;}
+
+.btn{display:inline-flex;align-items:center;gap:8px;font-family:'Archivo';font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:2px;background:var(--accent);color:var(--ink);padding:16px 34px;border-radius:2px;transition:.25s;border:1px solid var(--accent);}
+.btn:hover{background:var(--accent-dark);border-color:var(--accent-dark);color:#fff;}
+.btn-primary{background:var(--accent);color:var(--ink);border-color:var(--accent);font-size:12px;padding:12px 22px;border-radius:3px;}
+.btn-primary:hover{background:var(--accent-dark);border-color:var(--accent-dark);color:#fff;}
+.btn-secondary{background:var(--paper);color:var(--ink);border-color:var(--line);font-size:12px;padding:12px 22px;border-radius:3px;}
+.btn-secondary:hover{border-color:var(--ink);}
+.btn-danger{background:var(--danger);color:#fff;border-color:var(--danger);font-size:12px;padding:12px 22px;border-radius:3px;}
+.btn-danger:hover{background:#a93226;border-color:#a93226;}
+
+/* === ADMIN === */
+.admin-layout{display:flex;min-height:100vh;}
+.sidebar{width:240px;background:var(--brown);color:var(--paper);display:flex;flex-direction:column;flex-shrink:0;position:fixed;top:0;left:0;bottom:0;z-index:10;}
+.sb-brand{padding:28px 24px;font-family:'Archivo';font-weight:900;font-size:22px;text-transform:uppercase;letter-spacing:-.02em;border-bottom:1px solid rgba(255,255,255,.08);}
+.sb-brand sup{color:var(--accent);font-size:10px;vertical-align:super;}
+.sb-brand small{display:block;font-size:11px;font-weight:500;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-top:4px;}
+.sb-nav{padding:20px 0;flex:1;}
+.sb-link{display:flex;align-items:center;gap:12px;padding:12px 24px;font-family:'Archivo';font-weight:600;font-size:14px;text-transform:uppercase;letter-spacing:1px;color:#b0a494;transition:.15s;border:none;background:none;width:100%;text-align:left;}
+.sb-link:hover{color:var(--paper);background:rgba(255,255,255,.05);}
+.sb-link.active{color:var(--accent);background:rgba(201,168,76,.08);}
+.sb-foot{padding:20px 24px;border-top:1px solid rgba(255,255,255,.08);}
+.sb-foot a{color:var(--accent);font-family:'Archivo';font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:1px;}
+
+.admin-main{margin-left:240px;flex:1;min-height:100vh;display:flex;flex-direction:column;}
+.topbar{background:var(--paper);border-bottom:1px solid var(--line);padding:18px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:5;}
+.topbar h1{font-size:22px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;}
+.admin-content{padding:32px;flex:1;}
+.tab-panel{display:none;}
+.tab-panel.active{display:block;}
+
+.cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;}
+.cal-header h2{font-size:28px;font-weight:800;text-transform:uppercase;}
+.cal-arrows{display:flex;gap:8px;}
+.cal-arrows button{width:36px;height:36px;border:1px solid var(--line);background:var(--paper);border-radius:3px;font-size:16px;display:grid;place-items:center;transition:.15s;}
+.cal-arrows button:hover{background:var(--ink);color:var(--paper);border-color:var(--ink);}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);background:var(--paper);border:1px solid var(--line);border-radius:4px;overflow:hidden;}
+.cal-dow{padding:12px;text-align:center;font-family:'Archivo';font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:2px;color:var(--muted);border-bottom:1px solid var(--line);}
+.cal-cell{min-height:100px;padding:10px;border-bottom:1px solid var(--line);border-right:1px solid var(--line);cursor:pointer;transition:.1s;position:relative;}
+.cal-cell:nth-child(7n){border-right:none;}
+.cal-cell:hover{background:var(--paper-2);}
+.cal-cell.today{background:rgba(201,168,76,.08);}
+.cal-cell.other{opacity:.3;cursor:default;}
+.cal-cell.selected{box-shadow:inset 0 0 0 2px var(--accent);}
+.cal-cell .d{font-family:'Archivo';font-weight:700;font-size:14px;margin-bottom:6px;}
+.cal-cell .dots{display:flex;flex-wrap:wrap;gap:3px;}
+.cal-cell .dot{width:8px;height:8px;border-radius:50%;background:var(--accent);}
+.cal-cell .count{font-family:'Archivo';font-weight:700;font-size:11px;color:var(--accent);margin-top:4px;}
+
+.cal-tab-layout{display:grid;grid-template-columns:1fr 380px;gap:24px;align-items:start;}
+.cal-tab-layout.cal-no-day{grid-template-columns:1fr;}
+.cal-left{min-width:0;}
+.day-panel{background:var(--paper);border:1px solid var(--line);border-radius:4px;overflow:hidden;position:sticky;top:80px;}
+.day-panel-header{padding:20px 24px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;}
+.day-panel-header h3{font-family:'Archivo';font-weight:800;text-transform:uppercase;font-size:18px;letter-spacing:.5px;}
+.day-panel-empty{padding:40px;text-align:center;color:var(--muted);}
+.bk-list{list-style:none;}
+.bk-item{display:grid;grid-template-columns:56px 1fr auto auto auto;gap:10px;align-items:center;padding:14px 16px;border-bottom:1px solid var(--line);transition:.1s;}
+.bk-item:last-child{border-bottom:none;}
+.bk-item:hover{background:var(--paper-2);}
+.bk-item.bk-status-finished{background:rgba(80,160,80,.06);}
+.bk-item.bk-status-no_show{background:rgba(200,60,60,.06);opacity:.7;}
+.bk-status-btns{display:flex;gap:6px;}
+.status-btn{font-family:'Archivo';font-size:13px;font-weight:700;width:28px;height:28px;border-radius:3px;border:1px solid;transition:.15s;display:grid;place-items:center;}
+.status-btn.done{border-color:#3a9a3a;color:#3a9a3a;background:transparent;}
+.status-btn.done:hover{background:#3a9a3a;color:#fff;}
+.status-btn.noshow{border-color:#c03030;color:#c03030;background:transparent;}
+.status-btn.noshow:hover{background:#c03030;color:#fff;}
+.status-badge{font-family:'Archivo';font-size:11px;font-weight:700;letter-spacing:.5px;padding:5px 10px;border-radius:3px;}
+.status-badge.finished{background:rgba(80,160,80,.15);color:#3a9a3a;}
+.status-badge.no-show{background:rgba(200,60,60,.12);color:#c03030;}
+.bk-time{font-family:'Archivo';font-weight:800;font-size:16px;color:var(--accent);}
+.bk-info .bk-name{font-family:'Archivo';font-weight:700;font-size:13px;text-transform:uppercase;}
+.bk-info .bk-svc{font-size:12px;color:var(--muted);}
+.bk-details{font-size:11px;color:var(--muted);font-style:italic;margin-top:2px;}
+.bk-total{font-family:'Archivo';font-weight:800;font-size:16px;text-align:right;}
+.bk-actions{display:flex;gap:6px;justify-content:flex-end;}
+.bk-actions button{width:30px;height:30px;border:1px solid var(--line);background:var(--paper);border-radius:3px;display:grid;place-items:center;transition:.15s;}
+.bk-actions button:hover{background:var(--ink);color:var(--paper);border-color:var(--ink);}
+
+.stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:20px;margin-bottom:32px;}
+.stat-card{background:var(--paper);border:1px solid var(--line);border-radius:4px;padding:28px;position:relative;overflow:hidden;}
+.stat-card::after{content:'';position:absolute;top:0;left:0;width:4px;height:100%;}
+.stat-card.gold::after{background:var(--accent);}
+.stat-card.green::after{background:var(--ok);}
+.stat-card.brown-accent::after{background:var(--brown);}
+.stat-card .label{font-family:'Archivo';font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:2px;color:var(--muted);margin-bottom:8px;}
+.stat-card .value{font-family:'Archivo';font-weight:900;font-size:42px;line-height:1;letter-spacing:-.02em;}
+.stat-card .sub{font-size:14px;color:var(--muted);margin-top:8px;font-weight:300;}
+.breakdown{background:var(--paper);border:1px solid var(--line);border-radius:4px;overflow:hidden;}
+.breakdown h3{padding:20px 24px;border-bottom:1px solid var(--line);font-family:'Archivo';font-weight:800;text-transform:uppercase;font-size:16px;letter-spacing:1px;}
+.breakdown table{width:100%;border-collapse:collapse;}
+.breakdown th,.breakdown td{padding:12px 24px;text-align:left;border-bottom:1px solid var(--line);}
+.breakdown th{font-family:'Archivo';font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:2px;color:var(--muted);}
+.breakdown td{font-size:14px;}
+.breakdown td:last-child{font-family:'Archivo';font-weight:700;text-align:right;}
+.breakdown .total-row td{font-family:'Archivo';font-weight:800;font-size:16px;background:var(--paper-2);border-top:2px solid var(--ink);}
+
+.modal-overlay{position:fixed;inset:0;background:rgba(18,16,14,.6);z-index:100;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--paper);border-radius:6px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.3);}
+.modal-header{padding:24px 28px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;}
+.modal-header h3{font-family:'Archivo';font-weight:800;text-transform:uppercase;font-size:18px;letter-spacing:1px;}
+.modal-close{width:32px;height:32px;border:1px solid var(--line);background:var(--paper);border-radius:3px;display:grid;place-items:center;font-size:18px;transition:.15s;}
+.modal-close:hover{background:var(--ink);color:var(--paper);border-color:var(--ink);}
+.modal-body{padding:28px;}
+.modal-footer{padding:20px 28px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:12px;}
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:12px;}
+.field label{font-family:'Archivo';font-weight:600;text-transform:uppercase;letter-spacing:1px;font-size:11px;color:var(--muted);}
+.field input,.field textarea,.field select{background:var(--paper);border:1.5px solid var(--line);border-radius:3px;padding:12px 14px;font-family:'Inter';font-size:15px;transition:.15s;color:var(--ink);resize:vertical;}
+.field input:focus,.field textarea:focus,.field select:focus{outline:none;border-color:var(--accent);}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+
+.demo-banner{background:var(--brown-light);color:var(--accent);text-align:center;font-family:'Archivo';font-weight:700;font-size:11px;letter-spacing:2px;text-transform:uppercase;padding:6px;}
+
+@media (max-width:900px){
+  .sidebar{width:60px;overflow:hidden;}
+  .sb-brand span,.sb-link span,.sb-foot{display:none;}
+  .admin-main{margin-left:60px;}
+  .stats-grid{grid-template-columns:1fr;}
+  .admin-content{padding:16px;}
+  .cal-tab-layout,.cal-tab-layout.cal-no-day{grid-template-columns:1fr;}
+  .day-panel{position:static;top:auto;}
+}
+@media (max-width:640px){
+  .sidebar{width:100%;height:auto;position:sticky;flex-direction:row;align-items:center;bottom:auto;}
+  .sb-brand{padding:14px 16px;font-size:18px;border-bottom:none;}
+  .sb-brand small{display:none;}
+  .sb-nav{display:flex;padding:0;flex:1;}
+  .sb-link{padding:14px 12px;justify-content:center;}
+  .sb-link span{display:none;}
+  .sb-foot{display:none;}
+  .admin-layout{flex-direction:column;}
+  .admin-main{margin-left:0;}
+  .topbar{padding:14px 16px;}
+  .topbar h1{font-size:18px;}
+  .topbar .btn span{display:none;}
+  .cal-header h2{font-size:20px;}
+  .cal-arrows button{white-space:nowrap;width:auto;min-width:36px;padding:0 10px;}
+  .cal-cell{min-height:56px;padding:6px;}
+  .cal-cell .d{font-size:12px;margin-bottom:2px;}
+  .cal-cell .count{display:none;}
+  .cal-cell .dot{width:5px;height:5px;}
+  .cal-dow{padding:8px 2px;font-size:9px;letter-spacing:1px;}
+  .bk-item{grid-template-columns:auto 1fr auto;grid-template-areas:"time total actions" "info info info" "status status status";gap:8px 10px;padding:14px 16px;}
+  .bk-time{grid-area:time;}
+  .bk-info{grid-area:info;}
+  .bk-total{grid-area:total;text-align:left;align-self:center;}
+  .bk-status-btns{grid-area:status;}
+  .bk-actions{grid-area:actions;}
+  .modal{width:94vw;}
+  .stat-card{padding:20px;}
+}
+</style>
+</head>
+<body>
+<div class="demo-banner">Demo — statiske eksempeldata, ingen database</div>
+<div class="admin-layout">
+  <aside class="sidebar">
+    <div class="sb-brand"><span>We-mati<sup>&reg;</sup></span><small>Admin</small></div>
+    <nav class="sb-nav">
+      <button class="sb-link active" data-tab="calendar">
+        <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <span>Kalender</span>
+      </button>
+      <button class="sb-link" data-tab="stats">
+        <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        <span>Statistikk</span>
+      </button>
+    </nav>
+    <div class="sb-foot"><a href="#">&larr; Tilbake til nettside</a></div>
+  </aside>
+
+  <div class="admin-main">
+    <div class="topbar">
+      <h1 id="topTitle">Kalender</h1>
+      <button class="btn btn-primary" onclick="openAdd()">
+        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Ny Bestilling
+      </button>
+    </div>
+
+    <div class="admin-content">
+      <!-- CALENDAR TAB -->
+      <div class="tab-panel active" id="tab-calendar">
+        <div class="cal-tab-layout cal-no-day" id="calLayout">
+          <div class="cal-left">
+            <div class="cal-header">
+              <h2 id="calTitle"></h2>
+              <div class="cal-arrows">
+                <button onclick="shiftMonth(-1)">&lsaquo;</button>
+                <button onclick="goToday()">I dag</button>
+                <button onclick="shiftMonth(1)">&rsaquo;</button>
+              </div>
+            </div>
+            <div class="cal-grid" id="calGrid"></div>
+          </div>
+          <div class="day-panel" id="dayPanel"></div>
+        </div>
+      </div>
+
+      <!-- STATS TAB -->
+      <div class="tab-panel" id="tab-stats">
+        <div class="stats-grid" id="statsGrid"></div>
+        <div class="breakdown">
+          <h3>Tjenester denne måneden</h3>
+          <table><thead><tr><th>Tjeneste</th><th>Antall</th><th>Omsetning</th></tr></thead>
+          <tbody id="breakdownBody"></tbody></table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modalTitle">Ny Bestilling</h3>
+      <button class="modal-close" onclick="closeModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="field"><label>Tjeneste</label>
+        <select id="m_service"></select>
+      </div>
+      <div class="row2">
+        <div class="field"><label>Dato</label><input type="date" id="m_date"></div>
+        <div class="field"><label>Tid</label><select id="m_time"></select></div>
+      </div>
+      <div class="field"><label>Betaling</label>
+        <select id="m_pay"><option value="online">Nettbetaling (−50 kr)</option><option value="shop">Betal i butikk</option></select>
+      </div>
+      <div class="row2">
+        <div class="field"><label>Fornavn</label><input id="m_first" placeholder="Ola"></div>
+        <div class="field"><label>Etternavn</label><input id="m_last" placeholder="Nordmann"></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label>E-post</label><input type="email" id="m_email" placeholder="epost@eksempel.no"></div>
+        <div class="field"><label>Telefon</label><input type="tel" id="m_phone" placeholder="+47 ..."></div>
+      </div>
+      <div class="field"><label>Spesielle ønsker</label><textarea rows="2" id="m_details" placeholder="Valgfritt..."></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal()">Avbryt</button>
+      <button class="btn btn-danger" id="m_delete" style="display:none" onclick="deleteBooking()">Slett</button>
+      <button class="btn btn-primary" onclick="saveModal()">Lagre</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const SERVICES=[
+  {id:'herreklipp',name:'Herreklipp',price:300},
+  {id:'skinfade',name:'Skin Fade',price:300},
+  {id:'maskinklipp',name:'Maskinklipp',price:200},
+  {id:'kniv',name:'Barbering med Kniv',price:300},
+  {id:'skjegg',name:'Skjeggtrim',price:200},
+  {id:'harskjegg',name:'Hår + Skjegg',price:400},
+];
+const TIMES=['09:00','09:45','10:30','11:15','12:00','12:45','13:30','14:15','15:00','15:45','16:30','17:15','18:00','18:45'];
+const DOW_FULL=['Søndag','Mandag','Tirsdag','Onsdag','Torsdag','Fredag','Lørdag'];
+const MONTHS=['Januar','Februar','Mars','April','Mai','Juni','Juli','August','September','Oktober','November','Desember'];
+
+const now=new Date();
+let calYear=now.getFullYear(), calMonth=now.getMonth(), selectedDate=null, editingId=null;
+
+function pad(n){return String(n).padStart(2,'0');}
+function ds(y,m,d){return y+'-'+pad(m+1)+'-'+pad(d);}
+function rid(){return 'WM-'+Math.random().toString(36).slice(2,7).toUpperCase();}
+
+// Seed sample bookings across the current month
+function seed(){
+  const svc=id=>SERVICES.find(s=>s.id===id);
+  const mk=(day,time,sid,first,last,pay,status,details)=>{const s=svc(sid);return{id:rid(),service_id:sid,service_name:s.name,service_price:s.price,date:ds(calYear,calMonth,day),time,pay,status,first_name:first,last_name:last,email:first.toLowerCase()+'@epost.no',phone:'+47 900 00 000',details:details||'',total:pay==='online'?s.price-50:s.price};};
+  const today=now.getDate();
+  return[
+    mk(today,'09:00','herreklipp','Ola','Nordmann','online','finished',''),
+    mk(today,'10:30','skinfade','Kari','Hansen','shop','finished','Kort på sidene'),
+    mk(today,'12:00','skjegg','Per','Olsen','shop','no_show',''),
+    mk(today,'14:15','harskjegg','Nils','Berg','online','confirmed',''),
+    mk(today,'16:30','maskinklipp','Jon','Dahl','shop','confirmed',''),
+    mk(Math.min(today+1,28),'11:15','herreklipp','Anders','Lie','online','confirmed',''),
+    mk(Math.min(today+1,28),'13:30','kniv','Erik','Aas','shop','confirmed','Full barbering'),
+    mk(Math.max(today-1,1),'09:45','herreklipp','Lars','Moen','online','finished',''),
+    mk(Math.max(today-1,1),'15:00','skinfade','Tom','Ruud','shop','finished',''),
+    mk(Math.max(today-2,1),'10:30','harskjegg','Bjørn','Vik','shop','no_show',''),
+  ];
+}
+let bookings=seed();
+
+function monthBookings(){return bookings.filter(b=>b.date.startsWith(calYear+'-'+pad(calMonth+1)));}
+
+/* ---- Calendar ---- */
+function renderCalendar(){
+  document.getElementById('calTitle').textContent=MONTHS[calMonth]+' '+calYear;
+  const firstDay=new Date(calYear,calMonth,1);
+  const startDay=(firstDay.getDay()+6)%7;
+  const daysInMonth=new Date(calYear,calMonth+1,0).getDate();
+  const daysInPrev=new Date(calYear,calMonth,0).getDate();
+  const todayStr=ds(now.getFullYear(),now.getMonth(),now.getDate());
+  const counts={};
+  monthBookings().forEach(b=>counts[b.date]=(counts[b.date]||0)+1);
+
+  let cells='';
+  ['Man','Tir','Ons','Tor','Fre','Lør','Søn'].forEach(d=>cells+='<div class="cal-dow">'+d+'</div>');
+  for(let i=startDay-1;i>=0;i--)cells+='<div class="cal-cell other"><div class="d">'+(daysInPrev-i)+'</div></div>';
+  for(let d=1;d<=daysInMonth;d++){
+    const dstr=ds(calYear,calMonth,d);
+    const c=counts[dstr]||0;
+    let inner='<div class="d">'+d+'</div>';
+    if(c>0){
+      let dots='';for(let j=0;j<Math.min(c,6);j++)dots+='<div class="dot"></div>';
+      inner+='<div class="dots">'+dots+'</div><div class="count">'+c+' bestilling'+(c>1?'er':'')+'</div>';
+    }
+    const cls='cal-cell'+(dstr===todayStr?' today':'')+(dstr===selectedDate?' selected':'');
+    cells+='<div class="'+cls+'" onclick="selectDate(\''+dstr+'\')">'+inner+'</div>';
+  }
+  const rem=(startDay+daysInMonth)%7;
+  if(rem>0)for(let i=1;i<=7-rem;i++)cells+='<div class="cal-cell other"><div class="d">'+i+'</div></div>';
+  document.getElementById('calGrid').innerHTML=cells;
+  renderDayPanel();
+}
+
+function selectDate(dstr){selectedDate=dstr;renderCalendar();}
+
+function renderDayPanel(){
+  const layout=document.getElementById('calLayout');
+  const panel=document.getElementById('dayPanel');
+  if(!selectedDate){
+    layout.classList.add('cal-no-day');
+    panel.innerHTML='<div class="day-panel-empty">Velg en dag for å se bestillinger.</div>';
+    return;
+  }
+  layout.classList.remove('cal-no-day');
+  const p=selectedDate.split('-');
+  const dObj=new Date(+p[0],+p[1]-1,+p[2]);
+  const title=DOW_FULL[dObj.getDay()]+' '+dObj.getDate()+'. '+MONTHS[dObj.getMonth()]+' '+dObj.getFullYear();
+  const day=bookings.filter(b=>b.date===selectedDate).sort((a,b)=>a.time<b.time?-1:1);
+  let html='<div class="day-panel-header"><h3>'+title+'</h3><button class="btn btn-primary" onclick="openAdd()"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Legg Til</button></div>';
+  if(day.length===0){html+='<div class="day-panel-empty">Ingen bestillinger denne dagen.</div>';}
+  else{
+    html+='<ul class="bk-list">';
+    day.forEach(b=>{
+      let status;
+      if(b.status==='finished')status='<span class="status-badge finished">✓ Fullført</span>';
+      else if(b.status==='no_show')status='<span class="status-badge no-show">✗ No-show</span>';
+      else status='<button class="status-btn done" title="Fullført" onclick="setStatus(\''+b.id+'\',\'finished\')">✓</button><button class="status-btn noshow" title="Møtte ikke opp" onclick="setStatus(\''+b.id+'\',\'no_show\')">✗</button>';
+      html+='<li class="bk-item bk-status-'+b.status+'">'
+        +'<div class="bk-time">'+b.time+'</div>'
+        +'<div class="bk-info"><div class="bk-name">'+b.first_name+' '+b.last_name+'</div><div class="bk-svc">'+b.service_name+'</div>'+(b.details?'<div class="bk-details">'+b.details+'</div>':'')+'</div>'
+        +'<div class="bk-total">'+b.total+' kr</div>'
+        +'<div class="bk-status-btns">'+status+'</div>'
+        +'<div class="bk-actions"><button title="Rediger" onclick="openEdit(\''+b.id+'\')"><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>'
+        +'<button title="Slett" onclick="quickDelete(\''+b.id+'\')"><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></div>'
+        +'</li>';
+    });
+    html+='</ul>';
+  }
+  panel.innerHTML=html;
+}
+
+function setStatus(id,status){const b=bookings.find(x=>x.id===id);if(b){b.status=status;renderCalendar();}}
+function quickDelete(id){if(confirm('Slette denne bestillingen?')){bookings=bookings.filter(x=>x.id!==id);renderCalendar();}}
+
+function shiftMonth(dir){calMonth+=dir;if(calMonth<0){calMonth=11;calYear--;}if(calMonth>11){calMonth=0;calYear++;}selectedDate=null;renderCalendar();renderStats();}
+function goToday(){calYear=now.getFullYear();calMonth=now.getMonth();selectedDate=ds(now.getFullYear(),now.getMonth(),now.getDate());renderCalendar();renderStats();}
+
+/* ---- Stats ---- */
+function renderStats(){
+  const mb=monthBookings();
+  const total=mb.length;
+  const daysInMonth=new Date(calYear,calMonth+1,0).getDate();
+  const slots=daysInMonth*TIMES.length;
+  const available=slots-total;
+  const finished=mb.filter(b=>b.status==='finished').length;
+  const noShows=mb.filter(b=>b.status==='no_show').length;
+  const revenue=mb.filter(b=>b.status==='finished').reduce((s,b)=>s+b.total,0);
+  const expected=mb.filter(b=>['confirmed','finished'].includes(b.status)).reduce((s,b)=>s+b.total,0);
+  const fmt=n=>n.toLocaleString('no-NO');
+  document.getElementById('statsGrid').innerHTML=
+    '<div class="stat-card gold"><div class="label">Bestillinger denne måneden</div><div class="value">'+total+'</div><div class="sub">'+MONTHS[calMonth]+' '+calYear+'</div></div>'
+    +'<div class="stat-card green"><div class="label">Fullførte klipp</div><div class="value">'+finished+'</div><div class="sub">'+noShows+' no-show'+(noShows!==1?'s':'')+' · '+(total-finished-noShows)+' kommende</div></div>'
+    +'<div class="stat-card brown-accent"><div class="label">Faktisk omsetning</div><div class="value">'+fmt(revenue)+' kr</div><div class="sub">Forventet totalt: '+fmt(expected)+' kr</div></div>'
+    +'<div class="stat-card"><div class="label">Ledige tider</div><div class="value">'+available+'</div><div class="sub">av '+slots+' totalt ('+daysInMonth+' dager × '+TIMES.length+' tider)</div></div>';
+  const counts={},rev={};
+  mb.forEach(b=>{counts[b.service_name]=(counts[b.service_name]||0)+1;rev[b.service_name]=(rev[b.service_name]||0)+b.total;});
+  const rows=Object.keys(counts).map(k=>({name:k,count:counts[k],rev:rev[k]})).sort((a,b)=>b.count-a.count);
+  let body='';
+  rows.forEach(e=>body+='<tr><td style="font-family:Archivo;font-weight:600;text-transform:uppercase;font-size:13px;letter-spacing:.5px">'+e.name+'</td><td>'+e.count+'</td><td>'+fmt(e.rev)+' kr</td></tr>');
+  body+='<tr class="total-row"><td>Totalt</td><td>'+total+'</td><td>'+fmt(mb.reduce((s,b)=>s+b.total,0))+' kr</td></tr>';
+  document.getElementById('breakdownBody').innerHTML=body;
+}
+
+/* ---- Tabs ---- */
+document.querySelectorAll('.sb-link').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.sb-link').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    const tab=btn.dataset.tab;
+    document.getElementById('tab-calendar').classList.toggle('active',tab==='calendar');
+    document.getElementById('tab-stats').classList.toggle('active',tab==='stats');
+    document.getElementById('topTitle').textContent=tab==='calendar'?'Kalender':'Statistikk';
+    if(tab==='stats')renderStats();
+  });
+});
+
+/* ---- Modal ---- */
+function fillSelects(){
+  document.getElementById('m_service').innerHTML=SERVICES.map(s=>'<option value="'+s.id+'">'+s.name+' — '+s.price+' kr</option>').join('');
+  document.getElementById('m_time').innerHTML=TIMES.map(t=>'<option value="'+t+'">'+t+'</option>').join('');
+}
+function openAdd(){
+  editingId=null;
+  document.getElementById('modalTitle').textContent='Ny Bestilling';
+  document.getElementById('m_delete').style.display='none';
+  document.getElementById('m_service').value=SERVICES[0].id;
+  document.getElementById('m_date').value=selectedDate||ds(now.getFullYear(),now.getMonth(),now.getDate());
+  document.getElementById('m_time').value='09:00';
+  document.getElementById('m_pay').value='shop';
+  ['m_first','m_last','m_email','m_phone','m_details'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('modal').classList.add('open');
+}
+function openEdit(id){
+  const b=bookings.find(x=>x.id===id);if(!b)return;
+  editingId=id;
+  document.getElementById('modalTitle').textContent='Rediger Bestilling';
+  document.getElementById('m_delete').style.display='';
+  document.getElementById('m_service').value=b.service_id;
+  document.getElementById('m_date').value=b.date;
+  document.getElementById('m_time').value=b.time;
+  document.getElementById('m_pay').value=b.pay;
+  document.getElementById('m_first').value=b.first_name;
+  document.getElementById('m_last').value=b.last_name;
+  document.getElementById('m_email').value=b.email;
+  document.getElementById('m_phone').value=b.phone;
+  document.getElementById('m_details').value=b.details||'';
+  document.getElementById('modal').classList.add('open');
+}
+function closeModal(){document.getElementById('modal').classList.remove('open');}
+function saveModal(){
+  const svc=SERVICES.find(s=>s.id===document.getElementById('m_service').value);
+  const first=document.getElementById('m_first').value, last=document.getElementById('m_last').value;
+  const date=document.getElementById('m_date').value, time=document.getElementById('m_time').value;
+  if(!first||!last||!date||!time){alert('Vennligst fyll ut navn, dato og tid.');return;}
+  const pay=document.getElementById('m_pay').value;
+  const data={service_id:svc.id,service_name:svc.name,service_price:svc.price,date,time,pay,
+    first_name:first,last_name:last,email:document.getElementById('m_email').value,phone:document.getElementById('m_phone').value,
+    details:document.getElementById('m_details').value,total:pay==='online'?svc.price-50:svc.price};
+  if(editingId){const b=bookings.find(x=>x.id===editingId);Object.assign(b,data);}
+  else{bookings.push(Object.assign({id:rid(),status:'confirmed'},data));selectedDate=date;}
+  closeModal();renderCalendar();renderStats();
+}
+function deleteBooking(){if(editingId&&confirm('Slette denne bestillingen?')){bookings=bookings.filter(x=>x.id!==editingId);closeModal();renderCalendar();renderStats();}}
+document.getElementById('modal').addEventListener('click',e=>{if(e.target.id==='modal')closeModal();});
+
+/* ---- Init ---- */
+fillSelects();
+goToday();
+renderStats();
+</script>
+</body>
+</html>
